@@ -1,10 +1,15 @@
+import com.mongodb.spark.MongoSpark;
+import com.mongodb.spark.config.ReadConfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Main {
 
@@ -20,11 +25,6 @@ public class Main {
             "build/libs/mongo-java-driver-3.12.5.jar"
     );
 
-    public static final String SPARK_MASTER     = "spark://lattice-100:8079";
-    public static final String APP_NAME         = "experimental_application";
-    public static final String EXECUTOR_CORES   = "1";
-    public static final String EXECUTOR_MEMORY  = "4G";
-
     public static void main(String[] programArgs) {
 
         // Print args
@@ -34,13 +34,17 @@ public class Main {
         }
         log.info(sb.toString());
 
-        // Create SparkSession
+        // Create SparkSession with configuration
         log.info("Creating SparkSession...");
         SparkSession sparkSession = SparkSession.builder()
-                .master(SPARK_MASTER)
-                .appName(APP_NAME)
-                .config("spark.executor.cores", EXECUTOR_CORES)
-                .config("spark.executor.memory", EXECUTOR_MEMORY)
+                .master("spark://lattice-100.cs.colostate.edu:8079")
+                .appName("experimental_application")
+                .config("spark.submit.deployMode", "client")
+                .config("spark.executor.cores", "1")
+                .config("spark.executor.memory", "4G")
+                .config("spark.driver.bindAddress", "0.0.0.0")
+                .config("spark.driver.host", System.getenv("POD_IP"))
+                .config("spark.driver.port", "50052")
                 .getOrCreate();
 
         // Add dependency jars to SparkContext (if not already exists)
@@ -55,6 +59,16 @@ public class Main {
             }
         }
 
+        // Create MongoDB ReadConfig
+        Map<String, String> readOverrides = new HashMap<>();
+        readOverrides.put("uri", "mongodb://lattice-100:27018");
+        readOverrides.put("database", "sustaindb");
+        readOverrides.put("collection", "mpb_cypress_hill_sk_100m");
+        ReadConfig readConfig = ReadConfig.create(sparkContext.getConf(), readOverrides);
+
+        // Load Dataset
+        Dataset<Row> mongoCollectionDs = MongoSpark.load(sparkContext, readConfig).toDS(Row.class);
+        mongoCollectionDs.show(10);
 
     }
 }
