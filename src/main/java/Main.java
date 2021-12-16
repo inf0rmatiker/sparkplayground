@@ -28,10 +28,6 @@ public class Main {
 
     public static void main(String[] programArgs) {
 
-        // Make the container hang waiting for input
-        Scanner scanner = new Scanner(System.in);
-        String s = scanner.nextLine();
-
         // Print args
         StringBuilder sb = new StringBuilder("Program Arguments:\n");
         for (int i = 0; i < programArgs.length; i++) {
