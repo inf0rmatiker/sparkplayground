@@ -1,32 +1,29 @@
-apiVersion: batch/v1
-kind: Job
+apiVersion: v1
+kind: Pod
 metadata:
   name: sparkplayground
 spec:
-  template:
-    metadata:
-      name: sparkplayground
-    spec:
-      dnsPolicy: Default
-      restartPolicy: Never
-      containers:
-        - name: sparkplayground
-          image: sustain/sparkplayground
-          imagePullPolicy: Always
-          ports:
-          - containerPort: 50052
-          - containerPort: 9079
-          env:
-          - name: NODE_HOSTNAME
-            valueFrom:
-              fieldRef:
-                fieldPath: spec.nodeName
-          - name: POD_NAME
-            valueFrom:
-              fieldRef:
-                fieldPath: metadata.name
-          - name: POD_IP
-            valueFrom:
-              fieldRef:
-                fieldPath: status.podIP
-  backoffLimit: 1
+  dnsPolicy: Default
+  restartPolicy: Never
+  containers:
+    - name: sparkplayground
+      image: sustain/sparkplayground
+      imagePullPolicy: Always
+      # command: [ "/bin/bash", "-c", "--" ]
+      # args: [ "while true; do sleep 30; done;" ]
+      ports:
+      - containerPort: 50052
+      - containerPort: 9079
+      env:
+      - name: NODE_HOSTNAME
+        valueFrom:
+          fieldRef:
+            fieldPath: spec.nodeName
+      - name: POD_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.name
+      - name: POD_IP
+        valueFrom:
+          fieldRef:
+            fieldPath: status.podIP
