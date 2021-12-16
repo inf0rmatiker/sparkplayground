@@ -71,6 +71,7 @@ public class Main {
         Dataset<Row> mongoCollectionDs = MongoSpark.load(sparkContext, readConfig).toDS(Row.class);
         mongoCollectionDs.show(10);
 
-
+        sparkContext.close();
+        sparkSession.close();
     }
 }
