@@ -20,5 +20,7 @@ COPY src/ ./src
 COPY gradle/ ./gradle
 COPY run.sh ./run.sh
 
+RUN ./gradlew clean && ./gradlew install -x test
+
 # Build and run project
 ENTRYPOINT ["./run.sh"]

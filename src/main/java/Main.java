@@ -10,6 +10,7 @@ import org.apache.spark.sql.SparkSession;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 public class Main {
 
@@ -70,5 +71,9 @@ public class Main {
         Dataset<Row> mongoCollectionDs = MongoSpark.load(sparkContext, readConfig).toDS(Row.class);
         mongoCollectionDs.show(10);
 
+
+        // Make the container hang waiting for input
+        Scanner scanner = new Scanner(System.in);
+        scanner.nextLine();
     }
 }
