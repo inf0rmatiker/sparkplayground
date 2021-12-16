@@ -41,11 +41,13 @@ public class Main {
                 .appName("experimental_application")
                 .config("spark.submit.deployMode", "client")
                 .config("spark.dynamicAllocation.enabled", "false")
+                .config("spark.executor.instances", "1")
                 .config("spark.executor.cores", "1")
-                .config("spark.executor.memory", "4G")
+                .config("spark.executor.memory", "4g")
                 .config("spark.driver.bindAddress", "0.0.0.0")
                 .config("spark.driver.host", System.getenv("POD_IP"))
                 .config("spark.driver.port", "50052")
+                .config("spark.driver.blockManager.port", "50053")
                 .getOrCreate();
 
         // Add dependency jars to SparkContext (if not already exists)
