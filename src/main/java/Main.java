@@ -10,7 +10,6 @@ import org.apache.spark.sql.SparkSession;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 
 public class Main {
 
@@ -41,6 +40,7 @@ public class Main {
                 .master("spark://lattice-100.cs.colostate.edu:8079")
                 .appName("experimental_application")
                 .config("spark.submit.deployMode", "client")
+                .config("spark.dynamicAllocation.enabled", "false")
                 .config("spark.executor.cores", "1")
                 .config("spark.executor.memory", "4G")
                 .config("spark.driver.bindAddress", "0.0.0.0")
@@ -66,11 +66,13 @@ public class Main {
         readOverrides.put("database", "sustaindb");
         readOverrides.put("collection", "mpb_cypress_hill_sk_100m");
         readOverrides.put("readConcern.level", "available");
-        readOverrides.put("partitioner", "MongoShardedPartitioner");
+        //readOverrides.put("partitioner", "MongoShardedPartitioner");
         ReadConfig readConfig = ReadConfig.create(sparkContext.getConf(), readOverrides);
 
         // Load Dataset
         Dataset<Row> mongoCollectionDs = MongoSpark.load(sparkContext, readConfig).toDS(Row.class);
+        log.info(">>> RECORD COUNT: {}", mongoCollectionDs.count());
+
         mongoCollectionDs.show(10);
 
         sparkContext.close();
