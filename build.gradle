@@ -1,0 +1,63 @@
+plugins {
+    // Provide convenience executables for trying out the examples.
+    id 'application'
+    // Generate IntelliJ IDEA's .idea & .iml project files
+    id 'idea'
+    // Adds 'test' task
+    id 'java'
+}
+
+group 'org.example'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.11
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.8'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.8'
+    implementation group: 'org.mongodb', name: 'mongo-java-driver', version: '3.12.5'
+    implementation 'org.scala-lang:scala-library:2.12.10'
+    implementation "org.apache.spark:spark-core_2.12:3.0.1"
+    implementation "org.apache.spark:spark-sql_2.12:3.0.1"
+    implementation 'org.apache.spark:spark-mllib_2.12:3.0.1'
+    implementation 'org.mongodb.spark:mongo-spark-connector_2.12:3.0.1'
+}
+
+task copyDependencies(type: Copy) {
+    from configurations.runtimeClasspath
+    into file("$buildDir/libs")
+}
+
+build.dependsOn copyDependencies
+
+// Configure Gradle's test task
+test {
+    // Use JUnit 5 for testing
+    useJUnitPlatform()
+
+    // Show standard out/error from tests
+    testLogging {
+        showStandardStreams = true
+    }
+}
+
+task launch(type: CreateStartScripts) {
+    mainClassName = 'Main'
+    applicationName = 'launch'
+    outputDir = new File(project.buildDir, 'tmp')
+    classpath = startScripts.classpath
+}
+
+// Distribute generated binaries from above tasks into the bin/ folder
+applicationDistribution.into('bin') {
+    from(launch)
+    fileMode = 0755 // Make generated binaries executable
+}
