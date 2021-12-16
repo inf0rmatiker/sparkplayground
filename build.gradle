@@ -37,6 +37,7 @@ task copyDependencies(type: Copy) {
 }
 
 build.dependsOn copyDependencies
+startScripts.dependsOn copyDependencies
 
 // Configure Gradle's test task
 test {
