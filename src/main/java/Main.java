@@ -26,17 +26,16 @@ public class Main {
     );
 
     public static void main(String[] programArgs) {
-        System.err.println("\n\n\n <<<<<<<<<<<<<<<< GOT HEREEEEEE >>>>>>>>>>>>>>>>>\n\n");
 
         // Print args
         StringBuilder sb = new StringBuilder("Program Arguments:\n");
         for (int i = 0; i < programArgs.length; i++) {
             sb.append(String.format("[%d] %s\n", i, programArgs[i]));
         }
-        log.info(sb.toString());
+        System.err.println(sb);
 
         // Create SparkSession with configuration
-        log.info("Creating SparkSession...");
+        System.err.println("Creating SparkSession...");
         SparkSession sparkSession = SparkSession.builder()
                 .master("spark://lattice-100.cs.colostate.edu:8079")
                 .appName("experimental_application")
@@ -52,14 +51,14 @@ public class Main {
                 .getOrCreate();
 
         // Add dependency jars to SparkContext (if not already exists)
-        log.info("Adding dependency JARs to SparkContext...");
+        System.err.println("Adding dependency JARs to SparkContext...");
         JavaSparkContext sparkContext = new JavaSparkContext(sparkSession.sparkContext());
         for (String jar : sparkJars) {
             if (!sparkContext.jars().contains(jar)) {
-                log.info("Dependency JAR {} does not already exist; adding it now", jar);
+                System.err.printf("Dependency JAR %s does not already exist; adding it now\n", jar);
                 sparkContext.addJar(jar);
             } else {
-                log.info("Dependency JAR {} already exists", jar);
+                System.err.printf("Dependency JAR %s already exists\n", jar);
             }
         }
 
@@ -74,7 +73,7 @@ public class Main {
 
         // Load Dataset
         Dataset<Row> mongoCollectionDs = MongoSpark.load(sparkContext, readConfig).toDS(Row.class);
-        log.info(">>> RECORD COUNT: {}", mongoCollectionDs.count());
+        System.err.printf(">>> RECORD COUNT: %d\n", mongoCollectionDs.count());
 
         mongoCollectionDs.show(10);
 
