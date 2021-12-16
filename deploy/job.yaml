@@ -8,6 +8,7 @@ spec:
       name: sparkplayground
     spec:
       dnsPolicy: Default
+      restartPolicy: Never
       containers:
         - name: sparkplayground
           image: sustain/sparkplayground
@@ -28,4 +29,3 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: status.podIP
-      restartPolicy: Never
