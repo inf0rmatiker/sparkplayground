@@ -62,9 +62,11 @@ public class Main {
 
         // Create MongoDB ReadConfig
         Map<String, String> readOverrides = new HashMap<>();
-        readOverrides.put("uri", "mongodb://lattice-100:27018");
+        readOverrides.put("uri", "mongodb://lattice-100.cs.colostate.edu:27018/");
         readOverrides.put("database", "sustaindb");
         readOverrides.put("collection", "mpb_cypress_hill_sk_100m");
+        readOverrides.put("readConcern.level", "available");
+        readOverrides.put("partitioner", "MongoShardedPartitioner");
         ReadConfig readConfig = ReadConfig.create(sparkContext.getConf(), readOverrides);
 
         // Load Dataset
