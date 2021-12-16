@@ -1,11 +1,13 @@
 import com.mongodb.spark.MongoSpark;
 import com.mongodb.spark.config.ReadConfig;
+import com.mongodb.spark.rdd.api.java.JavaMongoRDD;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
+import org.bson.Document;
 
 import java.util.HashMap;
 import java.util.List;
@@ -72,10 +74,12 @@ public class Main {
         ReadConfig readConfig = ReadConfig.create(sparkContext.getConf(), readOverrides);
 
         // Load Dataset
-        Dataset<Row> mongoCollectionDs = MongoSpark.load(sparkContext, readConfig).toDS(Row.class);
-        System.err.printf(">>> RECORD COUNT: %d\n", mongoCollectionDs.count());
+        JavaMongoRDD<Document> mongoCollectionRDD = MongoSpark.load(sparkContext, readConfig);
+        Dataset<Row> mongoCollectionDS = mongoCollectionRDD.toDF();
+        mongoCollectionDS.printSchema();
+        System.err.printf(">>> RECORD COUNT: %d\n", mongoCollectionDS.count());
 
-        mongoCollectionDs.show(10);
+        mongoCollectionDS.show(10);
 
         sparkContext.close();
         sparkSession.close();
