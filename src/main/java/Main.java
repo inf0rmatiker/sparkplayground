@@ -71,7 +71,6 @@ public class Main {
         Dataset<Row> mongoCollectionDs = MongoSpark.load(sparkContext, readConfig).toDS(Row.class);
         mongoCollectionDs.show(10);
 
-
         // Make the container hang waiting for input
         Scanner scanner = new Scanner(System.in);
         scanner.nextLine();
