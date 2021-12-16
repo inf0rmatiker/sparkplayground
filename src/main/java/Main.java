@@ -26,6 +26,7 @@ public class Main {
     );
 
     public static void main(String[] programArgs) {
+        System.err.println("\n\n\n <<<<<<<<<<<<<<<< GOT HEREEEEEE >>>>>>>>>>>>>>>>>\n\n");
 
         // Print args
         StringBuilder sb = new StringBuilder("Program Arguments:\n");
