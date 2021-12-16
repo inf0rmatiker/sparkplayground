@@ -9,7 +9,6 @@ spec:
     spec:
       dnsPolicy: Default
       restartPolicy: Never
-      backoffLimit: 1
       containers:
         - name: sparkplayground
           image: sustain/sparkplayground
@@ -30,3 +29,4 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: status.podIP
+  backoffLimit: 1
