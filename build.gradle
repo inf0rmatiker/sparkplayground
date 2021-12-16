@@ -57,6 +57,8 @@ task launch(type: CreateStartScripts) {
     classpath = startScripts.classpath
 }
 
+launch.dependsOn copyDependencies
+
 // Distribute generated binaries from above tasks into the bin/ folder
 applicationDistribution.into('bin') {
     from(launch)
