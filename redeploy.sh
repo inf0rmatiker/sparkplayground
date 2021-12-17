@@ -8,8 +8,8 @@ git fetch \
 
 kubectl apply -f deploy/job.yaml
 
-if [ $? ]; then
-  while [ $(kubectl get pod/sparkplayground | grep "ContainerCreating") ]; do
+if [[ $? -eq 0 ]]; then
+  while [[ $(kubectl get pod/sparkplayground | grep "ContainerCreating") ]]; do
     sleep 1
   done
 
