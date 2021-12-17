@@ -70,8 +70,8 @@ public class Main {
         readOverrides.put("database", "sustaindb");
         readOverrides.put("collection", "neon_2d_wind");
         readOverrides.put("readConcern.level", "available");
-        readOverrides.put("partitioner", "MongoShardedPartitioner");
-        readOverrides.put("partitioner.shardKey", "site");
+        //readOverrides.put("partitioner", "MongoShardedPartitioner");
+        //readOverrides.put("partitioner.shardKey", "site");
         ReadConfig readConfig = ReadConfig.create(sparkContext.getConf(), readOverrides);
 
         // Load Dataset
