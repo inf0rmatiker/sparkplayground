@@ -91,9 +91,9 @@ public class Main {
                 )
         );
 
-        Dataset<Row> mongoCollectionDs = mongoCollectionRdd.toDF();
+        Dataset<Row> mongoCollectionDs = aggregatedRdd.toDF();
         mongoCollectionDs.printSchema();
-        System.err.printf(">>> RECORD COUNT: %d\n", mongoCollectionDs.count());
+        System.err.printf(">>> RECORD COUNT: %d\n", aggregatedRdd.count());
 
         mongoCollectionDs.show(10);
 
