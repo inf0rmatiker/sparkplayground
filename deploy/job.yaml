@@ -13,6 +13,8 @@ spec:
       # args: [ "while true; do sleep 30; done;" ]
       ports:
       - containerPort: 50052
+      - containerPort: 50053
+      - containerPort: 4040
       - containerPort: 9079
       env:
       - name: NODE_HOSTNAME
