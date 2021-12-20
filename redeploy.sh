@@ -2,8 +2,8 @@
 
 git fetch \
   && git pull \
-  && docker build -t sustain/sparkplayground . \
-  && docker push sustain/sparkplayground \
+  && docker build -t localhost:5000/sparkplayground . \
+  && docker push localhost:5000/sparkplayground \
   && kubectl delete -f deploy/job.yaml
 
 kubectl apply -f deploy/job.yaml
