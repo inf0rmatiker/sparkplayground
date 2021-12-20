@@ -7,7 +7,7 @@ spec:
   restartPolicy: Never
   containers:
     - name: sparkplayground
-      image: sustain/sparkplayground
+      image: localhost:5000/sparkplayground
       imagePullPolicy: Always
       # command: [ "/bin/bash", "-c", "--" ]
       # args: [ "while true; do sleep 30; done;" ]
