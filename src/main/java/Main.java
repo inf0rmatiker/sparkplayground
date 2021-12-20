@@ -13,6 +13,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Collections.singletonList;
+
 public class Main {
 
     private static final Logger log = LogManager.getLogger(Main.class);
@@ -68,19 +70,26 @@ public class Main {
         Map<String, String> readOverrides = new HashMap<>();
         readOverrides.put("uri", "mongodb://lattice-100.cs.colostate.edu:27018/");
         readOverrides.put("database", "sustaindb");
-        readOverrides.put("collection", "neon_2d_wind");
+        readOverrides.put("collection", "noaa_nam");
         readOverrides.put("readConcern.level", "available");
-        readOverrides.put("partitioner", "MongoShardedPartitioner");
-        readOverrides.put("partitioner.shardKey", "site");
+        // readOverrides.put("partitioner", "MongoShardedPartitioner");
+        // readOverrides.put("partitioner.shardKey", "site");
         ReadConfig readConfig = ReadConfig.create(sparkContext.getConf(), readOverrides);
 
         // Load Dataset
-        JavaMongoRDD<Document> mongoCollectionRDD = MongoSpark.load(sparkContext, readConfig);
-        Dataset<Row> mongoCollectionDS = mongoCollectionRDD.toDF();
-        mongoCollectionDS.printSchema();
-        System.err.printf(">>> RECORD COUNT: %d\n", mongoCollectionDS.count());
+        JavaMongoRDD<Document> mongoCollectionRdd = MongoSpark.load(sparkContext, readConfig);
 
-        mongoCollectionDS.show(10);
+        JavaMongoRDD<Document> aggregatedRdd = mongoCollectionRdd.withPipeline(
+                singletonList(
+                        Document.parse("{ $match: { \"GISJOIN\" : \"G4802470\" } }")
+                )
+        );
+
+        Dataset<Row> mongoCollectionDs = mongoCollectionRdd.toDF();
+        mongoCollectionDs.printSchema();
+        System.err.printf(">>> RECORD COUNT: %d\n", mongoCollectionDs.count());
+
+        mongoCollectionDs.show(10);
 
         sparkContext.close();
         sparkSession.close();
