@@ -93,7 +93,7 @@ public class Main {
         // Specify MongoDB pipeline for loading data
         JavaMongoRDD<Document> aggregatedRdd = mongoCollectionRdd.withPipeline(
                 Arrays.asList(
-                        Document.parse("{ $match:   { GISJOIN: G4802470 } }"),
+                        Document.parse("{ $match:   { GISJOIN: \"G4802470\" } }"),
                         Document.parse("{ $project: { " +
                                 "_id: 0, " +
                                 "RELATIVE_HUMIDITY_2_METERS_ABOVE_SURFACE_PERCENT: 1, " + // label
