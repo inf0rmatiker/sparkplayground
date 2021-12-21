@@ -4,6 +4,7 @@ import com.mongodb.spark.rdd.api.java.JavaMongoRDD;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.ml.evaluation.RegressionEvaluator;
 import org.apache.spark.ml.feature.VectorAssembler;
 import org.apache.spark.ml.linalg.Vector;
 import org.apache.spark.ml.linalg.Vectors;
@@ -87,7 +88,7 @@ public class Main {
         // readOverrides.put("partitioner.shardKey", "site");
         ReadConfig readConfig = ReadConfig.create(sparkContext.getConf(), readOverrides);
 
-        // Load Dataset (lazily)
+        // Load Dataset (lazily, really just connect to Mongo Router)
         JavaMongoRDD<Document> mongoCollectionRdd = MongoSpark.load(sparkContext, readConfig);
 
         // Specify MongoDB pipeline for loading data
@@ -95,7 +96,7 @@ public class Main {
                 Arrays.asList(
                         Document.parse("{ $match:   { GISJOIN: \"G4802470\" } }"),
                         Document.parse("{ $project: { " +
-                                "_id: 0, " +
+                                "_id: 0, " +                                              // don't include the _id field
                                 "RELATIVE_HUMIDITY_2_METERS_ABOVE_SURFACE_PERCENT: 1, " + // label
                                 "TEMPERATURE_TROPOPAUSE_KELVIN: 1 " +                     // feature
                                 "} }")
@@ -116,14 +117,26 @@ public class Main {
         VectorAssembler vectorAssembler = new VectorAssembler()
                 .setInputCols(new String[]{"TEMPERATURE_TROPOPAUSE_KELVIN"})
                 .setOutputCol("features");
-        Dataset<Row> vectorizedDs = vectorAssembler.transform(labeledDs).select("features", "label");
+        Dataset<Row> vectorizedDs = vectorAssembler.transform(labeledDs)
+                .select("features", "label");
 
         // Create an "already trained" Linear Regression Model
-        Vector coefficients = Vectors.dense(1.0);
-        double intercept = 3.0;
+        Vector coefficients = Vectors.dense(1.0); // dummy x-coefficient
+        double intercept = 3.0; // dummy y-intercept
         LinearRegressionModel lrModel = new LinearRegressionModel("Test Model", coefficients, intercept);
 
-        lrModel.transform(vectorizedDs).select("features", "label", "prediction").show(10);
+        // Run predictions on features/label dataset to produce the "prediction" column
+        Dataset<Row> predictionDs = lrModel.transform(vectorizedDs)
+                .select("features", "label", "prediction");
+
+        // Evaluate prediction metrics
+        RegressionEvaluator evaluator = new RegressionEvaluator()
+                .setMetricName("rmse")
+                .setLabelCol("label")
+                .setPredictionCol("prediction");
+
+        double rmse = evaluator.evaluate(predictionDs);
+        System.err.println(">>> RMSE: " + rmse);
 
         sparkContext.close();
         sparkSession.close();
