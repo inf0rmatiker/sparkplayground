@@ -4,11 +4,16 @@ import com.mongodb.spark.rdd.api.java.JavaMongoRDD;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.ml.feature.VectorAssembler;
+import org.apache.spark.ml.linalg.Vector;
+import org.apache.spark.ml.linalg.Vectors;
+import org.apache.spark.ml.regression.LinearRegressionModel;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.bson.Document;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -82,20 +87,43 @@ public class Main {
         // readOverrides.put("partitioner.shardKey", "site");
         ReadConfig readConfig = ReadConfig.create(sparkContext.getConf(), readOverrides);
 
-        // Load Dataset
+        // Load Dataset (lazily)
         JavaMongoRDD<Document> mongoCollectionRdd = MongoSpark.load(sparkContext, readConfig);
 
+        // Specify MongoDB pipeline for loading data
         JavaMongoRDD<Document> aggregatedRdd = mongoCollectionRdd.withPipeline(
-                singletonList(
-                        Document.parse("{ $match: { \"GISJOIN\" : \"G4802470\" } }")
+                Arrays.asList(
+                        Document.parse("{ $match:   { GISJOIN: G4802470 } }"),
+                        Document.parse("{ $project: { " +
+                                "_id: 0, " +
+                                "RELATIVE_HUMIDITY_2_METERS_ABOVE_SURFACE_PERCENT: 1, " + // label
+                                "TEMPERATURE_TROPOPAUSE_KELVIN: 1 " +                     // feature
+                                "} }")
                 )
         );
 
+        // Pull collection from MongoDB into Spark and print inferred schema and count
         Dataset<Row> mongoCollectionDs = aggregatedRdd.toDF();
         mongoCollectionDs.printSchema();
         System.err.printf(">>> RECORD COUNT: %d\n", aggregatedRdd.count());
-
         mongoCollectionDs.show(10);
+
+        Dataset<Row> labeledDs = mongoCollectionDs.withColumnRenamed(
+                "RELATIVE_HUMIDITY_2_METERS_ABOVE_SURFACE_PERCENT", "label"
+        );
+
+        // Create a Vector column for features
+        VectorAssembler vectorAssembler = new VectorAssembler()
+                .setInputCols(new String[]{"TEMPERATURE_TROPOPAUSE_KELVIN"})
+                .setOutputCol("features");
+        Dataset<Row> vectorizedDs = vectorAssembler.transform(labeledDs).select("features", "label");
+
+        // Create an "already trained" Linear Regression Model
+        Vector coefficients = Vectors.dense(1.0);
+        double intercept = 3.0;
+        LinearRegressionModel lrModel = new LinearRegressionModel("Test Model", coefficients, intercept);
+
+        lrModel.transform(vectorizedDs).select("features", "label", "prediction").show(10);
 
         sparkContext.close();
         sparkSession.close();
