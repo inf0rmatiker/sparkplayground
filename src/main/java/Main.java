@@ -80,7 +80,7 @@ public class Main {
 
         // Create MongoDB ReadConfig
         Map<String, String> readOverrides = new HashMap<>();
-        readOverrides.put("uri", "mongodb://lattice-100.cs.colostate.edu:27018/");
+        readOverrides.put("uri", "mongodb://localhost:27018/");
         readOverrides.put("database", "sustaindb");
         readOverrides.put("collection", "noaa_nam");
         readOverrides.put("readConcern.level", "available");
@@ -106,6 +106,7 @@ public class Main {
         // Pull collection from MongoDB into Spark and print inferred schema and count
         Dataset<Row> mongoCollectionDs = aggregatedRdd.toDF();
         mongoCollectionDs.printSchema();
+
         System.err.printf(">>> RECORD COUNT: %d\n", aggregatedRdd.count());
         mongoCollectionDs.show(10);
 
